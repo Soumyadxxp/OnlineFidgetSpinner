@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Fidget Spinner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .spinner-container {
+            touch-action: none;
+            transform-origin: center;
+        }
+        .spin-button {
+            transition: all 0.2s ease;
+            user-select: none;
+            box-shadow: 0 0 20px 2px #00ff00, 0 0 40px 2px #00ff00, 0 0 60px 2px #00ff00;
+            margin-top: 3cm;
+        }
+        .neon-green {
+            color: #39ff14;
+        }
+        .deep-black {
+            background-color: #000000;
+        }
+        .spinner-container img {
+            display: block;
+            border: none; /* Make the border invisible */
+            background: transparent;
+            box-shadow: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="h-full deep-black flex flex-col items-center justify-center select-none">
+    <!-- Signature -->
+    <div class="absolute top-4 left-4 neon-green text-sm">
+        Crafted with ❤️ by Soumyadeep Basu
+    </div>
+
+    <!-- Spinner Container -->
+    <div class="spinner-container relative mb-8">
+        <img src="image-SPINNER.png" 
+             id="spinner"
+             class="w-64 h-64 touch-none object-contain border-none">
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-col items-center gap-4 mt-3">
+        <button id="rotateButton" 
+                class="spin-button bg-emerald-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-emerald-700 active:scale-95">
+            Spin Me! 
+        </button>
+    </div>
+
+    <script>
+        let angle = 0;
+        let velocity = 0;
+        let isSpinning = false;
+        const friction = 0.990;
+        const spinner = document.getElementById('spinner');
+        const rotateButton = document.getElementById('rotateButton');
+
+        // Touch & Mouse Events
+        spinner.addEventListener('touchstart', handleStart);
+        spinner.addEventListener('mousedown', handleStart);
+        spinner.addEventListener('touchmove', handleMove);
+        spinner.addEventListener('mousemove', handleMove);
+        rotateButton.addEventListener('click', () => addVelocity(15));
+
+        // Prevent context menu on long press
+        spinner.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        function handleStart(e) {
+            e.preventDefault();
+        }
+
+        function handleMove(e) {
+            if (!isSpinning) return;
+            e.preventDefault();
+            const delta = e.type.includes('mouse') ? e.movementX : getTouchDelta(e);
+            addVelocity(delta * 0.5);
+        }
+
+        function getTouchDelta(e) {
+            const touch = e.touches[0];
+            const rect = spinner.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            return touch.clientX - centerX;
+        }
+
+        function addVelocity(amount) {
+            velocity += amount;
+            if (!isSpinning) startSpin();
+        }
+
+        function startSpin() {
+            isSpinning = true;
+            const animate = () => {
+                angle += velocity;
+                velocity *= friction; // Friction adjustment
+                
+                spinner.style.transform = `rotate(${angle}deg)`;
+
+                if (Math.abs(velocity) > 0.5) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                }
+            };
+            requestAnimationFrame(animate);
+        }
+
+        // Mobile height fix
+        function setAppHeight() {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        }
+        window.addEventListener('resize', setAppHeight);
+        setAppHeight();
+    </script>
+</body>
+</html>
